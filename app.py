@@ -1,10 +1,17 @@
 import streamlit as st
 import speech_recognition as sr
 import ollama
-import whisper
 import time
 from gtts import gTTS
 import os
+import whisper
+
+# Ensure the Whisper model is downloaded
+try:
+    whisper.load_model("base")  # Try loading the model
+except:
+    os.system("pip install openai-whisper")  # Install whisper package
+    os.system("whisper --download-model base")  # Download the model
 
 # Load Whisper model
 whisper_model = whisper.load_model("base")
