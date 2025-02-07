@@ -3,7 +3,7 @@ speechrecognition
 whisper
 ollama
 gtts
-torch==2.0.1  # Stable version to avoid issues
+torch  # Let Streamlit install the correct version automatically
 soundfile
 numpy
 numba
