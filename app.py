@@ -2,6 +2,9 @@ import streamlit as st
 import whisper
 import ollama
 from gtts import gTTS
+import torch
+import numpy as np
+import soundfile as sf
 import io
 
 # Load Whisper model
@@ -37,13 +40,19 @@ uploaded_file = st.file_uploader("Upload an audio file (MP3/WAV)", type=["mp3", 
 
 if uploaded_file:
     st.write("Processing...")
-    
-    # Convert uploaded file to a byte stream
+
+    # Convert uploaded file to a NumPy array
     audio_bytes = uploaded_file.read()
     audio_buffer = io.BytesIO(audio_bytes)
 
-    # Convert speech to text using Whisper
-    user_text = whisper_model.transcribe(audio_buffer)["text"].strip()
+    # Load audio using SoundFile
+    audio_data, samplerate = sf.read(audio_buffer, dtype="float32")
+
+    # Convert to Whisper-compatible NumPy format
+    audio_tensor = torch.from_numpy(audio_data)
+
+    # Transcribe the audio
+    user_text = whisper_model.transcribe(audio_tensor.numpy())["text"].strip()
     
     st.write(f"**You said:** {user_text}")
 
