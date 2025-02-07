@@ -3,7 +3,7 @@ speechrecognition
 whisper
 ollama
 gtts
-torch
+torch==2.0.1  # Stable version to avoid issues
 soundfile
 numpy
 numba
