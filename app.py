@@ -1,5 +1,14 @@
 import streamlit as st
-import whisper
+
+# Manually install missing dependencies (for Streamlit Cloud)
+try:
+    import whisper
+except ImportError:
+    st.warning("Installing required packages, please wait...")
+    import os
+    os.system("pip install whisper numba llvmlite")
+    import whisper  # Re-import after installation
+
 import ollama
 from gtts import gTTS
 import torch
