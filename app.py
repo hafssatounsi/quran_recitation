@@ -2,7 +2,7 @@ import streamlit as st
 import whisper
 import ollama
 from gtts import gTTS
-import os
+import io
 
 # Load Whisper model
 whisper_model = whisper.load_model("base")
@@ -38,12 +38,12 @@ uploaded_file = st.file_uploader("Upload an audio file (MP3/WAV)", type=["mp3", 
 if uploaded_file:
     st.write("Processing...")
     
-    # Save the uploaded file
-    with open("uploaded_audio.wav", "wb") as f:
-        f.write(uploaded_file.getbuffer())
+    # Convert uploaded file to a byte stream
+    audio_bytes = uploaded_file.read()
+    audio_buffer = io.BytesIO(audio_bytes)
 
     # Convert speech to text using Whisper
-    user_text = whisper_model.transcribe("uploaded_audio.wav")["text"].strip()
+    user_text = whisper_model.transcribe(audio_buffer)["text"].strip()
     
     st.write(f"**You said:** {user_text}")
 
