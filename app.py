@@ -1,17 +1,8 @@
 import streamlit as st
-import speech_recognition as sr
+import whisper
 import ollama
-import time
 from gtts import gTTS
 import os
-import whisper
-
-# Ensure the Whisper model is downloaded
-try:
-    whisper.load_model("base")  # Try loading the model
-except:
-    os.system("pip install openai-whisper")  # Install whisper package
-    os.system("whisper --download-model base")  # Download the model
 
 # Load Whisper model
 whisper_model = whisper.load_model("base")
@@ -19,22 +10,18 @@ whisper_model = whisper.load_model("base")
 # Sample Quranic verse
 correct_verse = "Bismillah ir Rahman ir Rahim"
 
-# Speech recognition setup
-recognizer = sr.Recognizer()
-mic = sr.Microphone()
-
 def speak(text):
     """Convert text to speech using gTTS."""
-    tts = gTTS(text=text, lang="ar")  # Use Arabic language
-    tts.save("output.mp3")  # Save to a file
-    os.system("mpg321 output.mp3")  # Play the file (on local system)
+    tts = gTTS(text=text, lang="ar")
+    tts.save("output.mp3")
+    st.audio("output.mp3")  # Play audio in Streamlit
 
 def analyze_mistake(user_text, correct_text):
     """Use Ollama LLM to analyze mistakes and suggest corrections."""
     prompt = f"""
     The user is reciting the Quran. They said: "{user_text}".
     The correct verse is: "{correct_text}".
-    
+
     1. Identify any mistakes.
     2. Suggest the correct pronunciation for a beginner.
     3. Provide a simple explanation to improve.
@@ -43,39 +30,25 @@ def analyze_mistake(user_text, correct_text):
     response = ollama.chat(model="llama2", messages=[{"role": "user", "content": prompt}])
     return response["message"]["content"]
 
-def listen_and_correct():
-    """Main function to listen to user recitation and provide corrections."""
-    with mic as source:
-        recognizer.adjust_for_ambient_noise(source)
-        last_speech_time = time.time()
-
-        while True:
-            try:
-                st.write("Listening...")
-                audio = recognizer.listen(source, timeout=120)
-
-                # Convert speech to text using Whisper
-                user_text = whisper_model.transcribe(audio)["text"].strip()
-                last_speech_time = time.time()
-
-                st.write(f"You said: {user_text}")
-
-                # Use Ollama to analyze mistakes
-                feedback = analyze_mistake(user_text, correct_verse)
-
-                speak(feedback)  # Use gTTS instead of pyttsx3
-                st.write(feedback)
-
-            except sr.UnknownValueError:
-                st.write("Could not understand audio, please try again.")
-            except sr.RequestError:
-                st.write("Speech Recognition service is unavailable.")
-            except sr.WaitTimeoutError:
-                if time.time() - last_speech_time > 120:
-                    speak("Need help? The next word is: " + correct_verse.split()[0])
-                    last_speech_time = time.time()
-
-# Streamlit UI
 st.title("Quran Recitation Correction")
-if st.button("Start Reciting"):
-    listen_and_correct()
+
+# File uploader instead of microphone
+uploaded_file = st.file_uploader("Upload an audio file (MP3/WAV)", type=["mp3", "wav"])
+
+if uploaded_file:
+    st.write("Processing...")
+    
+    # Save the uploaded file
+    with open("uploaded_audio.wav", "wb") as f:
+        f.write(uploaded_file.getbuffer())
+
+    # Convert speech to text using Whisper
+    user_text = whisper_model.transcribe("uploaded_audio.wav")["text"].strip()
+    
+    st.write(f"**You said:** {user_text}")
+
+    # Use Ollama to analyze mistakes
+    feedback = analyze_mistake(user_text, correct_verse)
+
+    speak(feedback)  # Provide correction in audio form
+    st.write(feedback)
