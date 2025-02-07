@@ -6,3 +6,5 @@ gtts
 torch
 soundfile
 numpy
+numba
+llvmlite
