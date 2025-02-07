@@ -1,5 +1,8 @@
 streamlit
 speechrecognition
+whisper
 ollama
 gtts
-openai-whisper
+torch
+soundfile
+numpy
