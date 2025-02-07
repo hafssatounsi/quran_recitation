@@ -1,17 +1,18 @@
 import streamlit as st
 
-# Manually install missing dependencies (for Streamlit Cloud)
+# Ensure required packages are installed (especially torch & whisper)
 try:
     import whisper
+    import torch
 except ImportError:
     st.warning("Installing required packages, please wait...")
     import os
-    os.system("pip install whisper numba llvmlite")
-    import whisper  # Re-import after installation
+    os.system("pip install torch==2.0.1 whisper numba llvmlite gtts soundfile numpy")
+    import torch  # Re-import after installation
+    import whisper
 
 import ollama
 from gtts import gTTS
-import torch
 import numpy as np
 import soundfile as sf
 import io
